@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🎨 AI Image & Logo Generator
 
 A production-ready full-stack web application for generating AI images and professional logos using **Hugging Face's free inference API**.
@@ -255,3 +256,7 @@ npm start
 ---
 
 **Made with ❤️ using free AI models**
+=======
+# Prompt-To-Image-Generator
+AI Image &amp; Logo Generator using React + Express + Clipdrop API
+>>>>>>> 108e560c2b91fa040e5ce338bd7fc4e2d3004244
