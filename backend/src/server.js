@@ -1,9 +1,14 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import path from 'path';
 import { generateWithClipdrop } from './providers/clipdrop.js';
+import { generateWithHuggingFace } from './providers/huggingface.js';
 
-dotenv.config();
+// Load .env from the same directory as server.js (backend/src/)
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -32,7 +37,7 @@ app.get('/health', (req, res) => {
  * {
  *   "success": true,
  *   "image": "data:image/png;base64,...",
- *   "model": "stable-diffusion-xl-base-1.0",
+ *   "model": "FLUX.1-schnell",
  *   "provider": "huggingface"
  * }
  */
@@ -61,8 +66,8 @@ app.post('/api/generate', async (req, res) => {
 
     console.log(`[API] Generating ${mode} with prompt: "${cleanPrompt}"`);
 
-    // Get provider from environment (default: clipdrop)
-    const provider = process.env.PROVIDER || 'clipdrop';
+    // Get provider from environment (default: huggingface)
+    const provider = process.env.PROVIDER || 'huggingface';
 
     let result;
 
@@ -70,18 +75,15 @@ app.post('/api/generate', async (req, res) => {
       result = await generateWithClipdrop(cleanPrompt, cleanNegativePrompt, mode);
     } else if (provider === 'huggingface') {
       result = await generateWithHuggingFace(cleanPrompt, cleanNegativePrompt, mode);
-    } else if (provider === 'gemini') {
-      result = await generateWithGemini(cleanPrompt, cleanNegativePrompt, mode);
     } else {
       return res.status(400).json({
-        error: `Unknown provider: ${provider}. Use "clipdrop", "huggingface", or "gemini".`,
+        error: `Unknown provider: ${provider}. Use "clipdrop" or "huggingface".`,
       });
     }
 
     res.json(result);
   } catch (error) {
     console.error('[API Error]', error.message);
-
     res.status(500).json({
       error: error.message || 'Failed to generate image',
     });
@@ -115,9 +117,9 @@ app.listen(PORT, () => {
 ║  Server running on port ${PORT}           ║
 ╚════════════════════════════════════════╝
 
-📝 Provider: ${process.env.PROVIDER || 'clipdrop'}
-🎨 Service: Clipdrop (Stability AI)
-🔗 API Key: ${process.env.CLIPDROP_API_KEY ? '✓ Set' : '✗ Missing'}
+📝 Provider : ${process.env.PROVIDER || 'huggingface'}
+🔗 HF Key   : ${process.env.HUGGINGFACE_API_KEY ? '✓ Set' : '✗ Missing'}
+🔗 CD Key   : ${process.env.CLIPDROP_API_KEY ? '✓ Set' : '✗ Missing'}
 
 Available endpoints:
   GET  /health
