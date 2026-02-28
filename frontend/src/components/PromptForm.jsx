@@ -1,37 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const PromptForm = ({ mode, onGenerate, loading, promptHistory }) => {
   const [prompt, setPrompt] = useState('');
   const [negativePrompt, setNegativePrompt] = useState('');
   const [showNegative, setShowNegative] = useState(false);
+  const [charCount, setCharCount] = useState(0);
 
   const modeConfig = {
     image: {
-      title: 'General Image Generator',
-      description: 'Describe any image you want to create',
+      title: 'Describe your image',
+      description: 'Be specific — colors, style, mood, lighting all help',
       buttonLabel: 'Generate Image',
-      placeholder: 'e.g., A futuristic city in neon lights, cyberpunk style...',
+      placeholder: 'e.g. A lone astronaut standing on Mars at golden hour, cinematic lighting, ultra realistic...',
       examples: [
-        'A serene Japanese garden with cherry blossoms',
-        'A futuristic space station orbiting a blue planet',
-        'A magical forest with bioluminescent trees',
-        'A steampunk airship in the clouds',
+        'A serene Japanese garden with cherry blossoms at dusk',
+        'Futuristic city skyline with neon lights and flying cars',
+        'A magical forest with glowing bioluminescent trees',
+        'Steampunk airship sailing through stormy clouds',
       ],
       negativePromptDefault: '',
     },
     logo: {
-      title: 'Professional Logo Generator',
-      description: 'Create clean, modern brand logos',
+      title: 'Describe your logo',
+      description: 'Include brand name, style, colors, and industry',
       buttonLabel: 'Generate Logo',
-      placeholder: 'e.g., Tech startup, minimalist, modern...',
+      placeholder: 'e.g. Minimalist tech startup logo, geometric shape, dark blue and silver...',
       examples: [
-        'Minimalist tech company logo, geometric, modern',
-        'Professional consulting firm logo, clean lines, vector style',
-        'Startup logo, flat design, brand identity',
-        'E-commerce brand logo, simple geometric shapes',
+        'Minimal tech company logo, geometric, electric blue',
+        'Law firm logo, classic serif, gold and black',
+        'Gaming brand logo, aggressive, neon green and dark',
+        'Eco startup logo, leaf motif, earthy greens',
       ],
-      negativePromptDefault: 'blurry, messy, photo, realistic humans, background clutter, text, watermark',
+      negativePromptDefault: 'blurry, messy, photo, realistic, background clutter, text, watermark',
     },
   };
 
@@ -39,11 +40,8 @@ const PromptForm = ({ mode, onGenerate, loading, promptHistory }) => {
 
   useEffect(() => {
     setPrompt('');
-    setNegativePrompt(
-      mode === 'logo'
-        ? modeConfig.logo.negativePromptDefault
-        : modeConfig.image.negativePromptDefault
-    );
+    setCharCount(0);
+    setNegativePrompt(mode === 'logo' ? modeConfig.logo.negativePromptDefault : '');
     setShowNegative(mode === 'logo');
   }, [mode]);
 
@@ -52,136 +50,191 @@ const PromptForm = ({ mode, onGenerate, loading, promptHistory }) => {
     onGenerate(prompt, negativePrompt);
   };
 
-  const insertExample = (example) => {
-    setPrompt(example);
+  const handlePromptChange = (e) => {
+    setPrompt(e.target.value);
+    setCharCount(e.target.value.length);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Title & Description */}
-      <div>
-        <h2 className="text-2xl font-bold mb-2">{config.title}</h2>
-        <p className="text-gray-400 text-sm">{config.description}</p>
+    <form onSubmit={handleSubmit}>
+
+      {/* Title */}
+      <div style={{ marginBottom: '28px' }}>
+        <h2 style={{
+          fontSize: '1.35rem',
+          fontWeight: 700,
+          color: '#f1f5f9',
+          marginBottom: '6px',
+          letterSpacing: '-0.01em',
+        }}>
+          {config.title}
+        </h2>
+        <p style={{ color: 'rgba(100,116,139,0.9)', fontSize: '0.85rem', lineHeight: 1.5 }}>
+          {config.description}
+        </p>
       </div>
 
-      {/* Prompt Input */}
-      <div>
-        <label className="block text-sm font-semibold mb-2 text-gray-200">
-          Prompt
-        </label>
+      {/* Prompt textarea */}
+      <div style={{ marginBottom: '20px', position: 'relative' }}>
+        <label className="label">Prompt</label>
         <textarea
+          id="prompt-input"
           value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
+          onChange={handlePromptChange}
           placeholder={config.placeholder}
           rows="4"
-          className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+          maxLength={500}
+          disabled={loading}
+          style={{ opacity: loading ? 0.6 : 1 }}
         />
+        <div style={{
+          position: 'absolute',
+          bottom: '10px',
+          right: '12px',
+          fontSize: '0.7rem',
+          color: charCount > 400 ? '#f87171' : 'rgba(100,116,139,0.5)',
+          fontWeight: 500,
+        }}>
+          {charCount}/500
+        </div>
       </div>
 
-      {/* Quick Examples */}
-      <div>
-        <label className="block text-xs font-semibold mb-3 text-gray-400 uppercase tracking-wide">
-          Quick Examples
-        </label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      {/* Quick examples */}
+      <div style={{ marginBottom: '24px' }}>
+        <label className="label">Quick Examples</label>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
           {config.examples.map((example, idx) => (
             <motion.button
               key={idx}
               type="button"
-              onClick={() => insertExample(example)}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="p-2 glass-sm hover:bg-white/15 text-left text-xs text-gray-300 rounded-lg transition-all"
+              id={`example-${idx}`}
+              onClick={() => { setPrompt(example); setCharCount(example.length); }}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="chip"
+              disabled={loading}
             >
-              💡 {example.substring(0, 40)}...
+              💡 {example.length > 35 ? example.substring(0, 35) + '…' : example}
             </motion.button>
           ))}
         </div>
       </div>
 
-      {/* Negative Prompt Toggle & Input */}
-      <div>
-        <div className="flex items-center gap-2 mb-2">
+      {/* Divider */}
+      <div className="divider" style={{ marginBottom: '20px' }} />
+
+      {/* Negative Prompt */}
+      <div style={{ marginBottom: '28px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
           <input
             type="checkbox"
-            id="negativePrompt"
+            id="negativePromptToggle"
             checked={showNegative}
             onChange={(e) => setShowNegative(e.target.checked)}
-            className="w-4 h-4 accent-blue-500 cursor-pointer"
           />
-          <label htmlFor="negativePrompt" className="text-sm font-semibold text-gray-200 cursor-pointer">
-            Negative Prompt (Optional)
+          <label htmlFor="negativePromptToggle" style={{
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            color: 'rgba(203,213,225,0.8)',
+            cursor: 'pointer',
+            userSelect: 'none',
+          }}>
+            Negative Prompt
+            <span style={{ marginLeft: '8px', fontSize: '0.7rem', color: 'rgba(100,116,139,0.6)', fontWeight: 400 }}>
+              — what to exclude
+            </span>
           </label>
         </div>
 
-        {showNegative && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-          >
-            <textarea
-              value={negativePrompt}
-              onChange={(e) => setNegativePrompt(e.target.value)}
-              placeholder="What to avoid in the image..."
-              rows="2"
-              className="w-full px-4 py-2 bg-white/5 border border-white/20 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
-            />
-            {mode === 'logo' && (
-              <p className="text-xs text-gray-400 mt-2">
-                ℹ️ For logos, negative prompt is auto-set to exclude common unwanted elements
-              </p>
-            )}
-          </motion.div>
-        )}
+        <AnimatePresence>
+          {showNegative && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25 }}
+              style={{ overflow: 'hidden' }}
+            >
+              <textarea
+                id="negative-prompt-input"
+                value={negativePrompt}
+                onChange={(e) => setNegativePrompt(e.target.value)}
+                placeholder="blurry, low quality, distorted, watermark..."
+                rows="2"
+                disabled={loading}
+                style={{ fontSize: '0.85rem', opacity: loading ? 0.6 : 1 }}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Generate Button */}
       <motion.button
         type="submit"
-        disabled={loading}
-        whileHover={{ scale: loading ? 1 : 1.02 }}
-        whileTap={{ scale: loading ? 1 : 0.98 }}
-        className={`w-full py-3 px-6 font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 ${
-          loading
-            ? 'bg-blue-500/50 cursor-not-allowed opacity-75'
-            : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 glow-hover'
-        }`}
+        id="generate-btn"
+        disabled={loading || !prompt.trim()}
+        whileHover={!loading && prompt.trim() ? { scale: 1.02 } : {}}
+        whileTap={!loading && prompt.trim() ? { scale: 0.98 } : {}}
+        className="btn-generate"
+        style={{ opacity: !prompt.trim() ? 0.4 : 1 }}
       >
         {loading ? (
           <>
-            <div className="loader w-5 h-5 border-2"></div>
-            <span>Generating...</span>
+            <span className="loader-sm" />
+            <span>Generating…</span>
           </>
         ) : (
           <>
-            <span>✨</span>
+            <span>✦</span>
             <span>{config.buttonLabel}</span>
           </>
         )}
       </motion.button>
 
-      {/* Prompt History */}
-      {promptHistory.length > 0 && (
-        <div>
-          <label className="block text-xs font-semibold mb-2 text-gray-400 uppercase tracking-wide">
-            Recent Prompts
-          </label>
-          <div className="space-y-1">
-            {promptHistory.map((p, idx) => (
-              <motion.button
-                key={idx}
-                type="button"
-                onClick={() => setPrompt(p)}
-                className="w-full p-2 text-left text-xs glass-sm hover:bg-white/10 rounded-lg text-gray-300 transition-all truncate"
-                whileHover={{ x: 4 }}
-              >
-                🕐 {p.substring(0, 60)}...
-              </motion.button>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Recent Prompts */}
+      <AnimatePresence>
+        {promptHistory.length > 0 && !loading && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            style={{ marginTop: '28px' }}
+          >
+            <div className="divider" style={{ marginBottom: '16px' }} />
+            <label className="label">Recent Prompts</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {promptHistory.map((p, idx) => (
+                <motion.button
+                  key={idx}
+                  type="button"
+                  onClick={() => { setPrompt(p); setCharCount(p.length); }}
+                  whileHover={{ x: 4 }}
+                  className="glass-sm"
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    textAlign: 'left',
+                    fontSize: '0.8rem',
+                    color: 'rgba(148,163,184,0.7)',
+                    cursor: 'pointer',
+                    background: 'transparent',
+                    border: '1px solid rgba(255,255,255,0.05)',
+                    fontFamily: 'Inter, sans-serif',
+                    transition: 'all 0.2s ease',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  <span style={{ marginRight: '8px', opacity: 0.5 }}>↺</span>
+                  {p.substring(0, 70)}{p.length > 70 ? '…' : ''}
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </form>
   );
 };
