@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import ModeSelector from './components/ModeSelector';
 import PromptForm from './components/PromptForm';
 import ImagePreview from './components/ImagePreview';
@@ -41,9 +41,11 @@ function App() {
       setError('Please enter a prompt');
       return;
     }
+
     setLoading(true);
     setError('');
     setImage(null);
+
     try {
       const response = await axios.post(`${API_URL}/api/generate`, {
         prompt,
@@ -67,91 +69,128 @@ function App() {
     link.click();
   };
 
-  return (
-    <div style={{ minHeight: '100vh', position: 'relative', zIndex: 1 }}>
+  const reveal = {
+    hidden: { opacity: 0, y: 22 },
+    show: (delay = 0) => ({
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.55, ease: 'easeOut', delay },
+    }),
+  };
 
-      {/* ── Ambient Orbs ─────────────────────────── */}
+  return (
+    <div className="app-shell" style={{ minHeight: '100vh', position: 'relative', zIndex: 1 }}>
+      <div className="ambient-grid" />
+      <div className="ambient-vignette" />
+
       <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
-        <div className="animate-float" style={{
-          position: 'absolute', top: '-5%', left: '10%',
-          width: '500px', height: '500px',
-          background: 'radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%)',
-          borderRadius: '50%', filter: 'blur(40px)',
-        }} />
-        <div className="animate-float-delayed" style={{
-          position: 'absolute', bottom: '-5%', right: '10%',
-          width: '400px', height: '400px',
-          background: 'radial-gradient(circle, rgba(236,72,153,0.08) 0%, transparent 70%)',
-          borderRadius: '50%', filter: 'blur(40px)',
-        }} />
-        <div style={{
-          position: 'absolute', top: '40%', left: '50%', transform: 'translate(-50%,-50%)',
-          width: '300px', height: '300px',
-          background: 'radial-gradient(circle, rgba(79,70,229,0.06) 0%, transparent 70%)',
-          borderRadius: '50%', filter: 'blur(60px)',
-        }} />
+        <div
+          className="animate-float"
+          style={{
+            position: 'absolute',
+            top: '-5%',
+            left: '10%',
+            width: '500px',
+            height: '500px',
+            background: 'radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%)',
+            borderRadius: '50%',
+            filter: 'blur(40px)',
+          }}
+        />
+        <div
+          className="animate-float-delayed"
+          style={{
+            position: 'absolute',
+            bottom: '-5%',
+            right: '10%',
+            width: '400px',
+            height: '400px',
+            background: 'radial-gradient(circle, rgba(236,72,153,0.08) 0%, transparent 70%)',
+            borderRadius: '50%',
+            filter: 'blur(40px)',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            top: '40%',
+            left: '50%',
+            transform: 'translate(-50%,-50%)',
+            width: '300px',
+            height: '300px',
+            background: 'radial-gradient(circle, rgba(79,70,229,0.06) 0%, transparent 70%)',
+            borderRadius: '50%',
+            filter: 'blur(60px)',
+          }}
+        />
+        <div className="ambient-ring ambient-ring-one" />
+        <div className="ambient-ring ambient-ring-two" />
       </div>
 
-      {/* ── Main Content ─────────────────────────── */}
-      <div style={{ position: 'relative', zIndex: 1, maxWidth: '680px', margin: '0 auto', padding: '48px 20px 80px' }}>
-
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: 'easeOut' }}
-          style={{ textAlign: 'center', marginBottom: '48px' }}
-        >
-          {/* Top badge */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          maxWidth: '680px',
+          margin: '0 auto',
+          padding: '48px 20px 80px',
+        }}
+      >
+        <motion.div initial="hidden" animate="show" variants={reveal} custom={0.05} style={{ textAlign: 'center', marginBottom: '48px' }}>
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
+            initial={{ opacity: 0, scale: 0.9, y: -8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ delay: 0.18, duration: 0.45 }}
             style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}
           >
-            <span className="badge">⚡ Powered by FLUX.1 & Clipdrop</span>
+            <span className="badge">Powered by FLUX.1 and Clipdrop</span>
           </motion.div>
 
-          {/* Title */}
-          <h1 style={{
-            fontSize: 'clamp(2rem, 5vw, 3.2rem)',
-            fontWeight: 900,
-            lineHeight: 1.1,
-            letterSpacing: '-0.03em',
-            marginBottom: '16px',
-          }}>
-            <span className="gradient-text">AI Image</span>
+          <motion.h1
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.26, duration: 0.5, ease: 'easeOut' }}
+            style={{
+              fontSize: 'clamp(2rem, 5vw, 3.2rem)',
+              fontWeight: 900,
+              lineHeight: 1.1,
+              letterSpacing: '-0.03em',
+              marginBottom: '16px',
+            }}
+          >
+            <span className="gradient-text gradient-flow">AI Image</span>
             <br />
             <span style={{ color: '#f1f5f9' }}>Generator</span>
-          </h1>
+          </motion.h1>
 
-          <p style={{
-            color: 'rgba(148, 163, 184, 0.7)',
-            fontSize: '0.95rem',
-            fontWeight: 400,
-            lineHeight: 1.6,
-            maxWidth: '400px',
-            margin: '0 auto',
-          }}>
+          <motion.p
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.34, duration: 0.45 }}
+            style={{
+              color: 'rgba(148, 163, 184, 0.7)',
+              fontSize: '0.95rem',
+              fontWeight: 400,
+              lineHeight: 1.6,
+              maxWidth: '400px',
+              margin: '0 auto',
+            }}
+          >
             Transform your words into stunning visuals using state-of-the-art AI models
-          </p>
+          </motion.p>
         </motion.div>
 
-        {/* Mode Selector */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-        >
+        <motion.div initial="hidden" animate="show" variants={reveal} custom={0.2}>
           <ModeSelector mode={mode} onModeChange={handleModeChange} />
         </motion.div>
 
-        {/* Main Card */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.6 }}
-          className="glass"
+          initial="hidden"
+          animate="show"
+          variants={reveal}
+          custom={0.28}
+          whileHover={{ y: -4, transition: { duration: 0.25 } }}
+          className="glass landing-card"
           style={{ marginTop: '24px', padding: 'clamp(24px, 5vw, 40px)' }}
         >
           <AnimatePresence mode="wait">
@@ -162,16 +201,10 @@ function App() {
               exit={{ opacity: 0, x: -10 }}
               transition={{ duration: 0.25 }}
             >
-              <PromptForm
-                mode={mode}
-                onGenerate={handleGenerate}
-                loading={loading}
-                promptHistory={promptHistory}
-              />
+              <PromptForm mode={mode} onGenerate={handleGenerate} loading={loading} promptHistory={promptHistory} />
             </motion.div>
           </AnimatePresence>
 
-          {/* Error */}
           <AnimatePresence>
             {error && (
               <motion.div
@@ -181,12 +214,11 @@ function App() {
                 className="error-box"
                 style={{ marginTop: '20px' }}
               >
-                ⚠️ {error}
+                {error}
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Loader */}
           <AnimatePresence>
             {loading && (
               <motion.div
@@ -203,16 +235,13 @@ function App() {
               >
                 <div className="loader" />
                 <p style={{ color: 'rgba(167, 139, 250, 0.8)', fontSize: '0.875rem', fontWeight: 500 }}>
-                  Creating your {mode === 'logo' ? 'logo' : 'image'}…
+                  Creating your {mode === 'logo' ? 'logo' : 'image'}...
                 </p>
-                <p style={{ color: 'rgba(100,116,139,0.6)', fontSize: '0.75rem' }}>
-                  This may take 10–30 seconds
-                </p>
+                <p style={{ color: 'rgba(100,116,139,0.6)', fontSize: '0.75rem' }}>This may take 10-30 seconds</p>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Result */}
           <AnimatePresence>
             {image && !loading && (
               <motion.div
@@ -227,18 +256,16 @@ function App() {
           </AnimatePresence>
         </motion.div>
 
-        {/* Footer */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
           style={{ textAlign: 'center', marginTop: '40px' }}
         >
-          <p style={{ color: 'rgba(71,85,105,0.8)', fontSize: '0.75rem' }}>
-            Free & Open Source · No watermarks · Unlimited generations
+          <p className="footer-shimmer" style={{ color: 'rgba(71,85,105,0.8)', fontSize: '0.75rem' }}>
+            Free and Open Source | No watermarks | Unlimited generations
           </p>
         </motion.div>
-
       </div>
     </div>
   );
